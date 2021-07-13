@@ -1,9 +1,16 @@
 #include <ncurses.h> 
 #include <string>
 #include <math.h>
+#include <stdexcept>
+#include <memory>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+
+#include "CInputParser.hpp"
+#include "SParsedInput.hpp"
+
+using namespace std;
 
 class CImage{
     uint8_t * imageData_;
@@ -14,19 +21,26 @@ public:
     inline static int fromNormCoord(float normCoord, int size) { return round(normCoord * (float) size) + 0.001; }
     inline static float toNormCoord(int coord, int size) { return (float) coord / (float) size; }
     
-    CImage(const std::string& filepath);
+    CImage(const string& filepath);
     CImage(const CImage & toCopy, int scaleToWidth, int scaleToHeight);
     ~CImage();
     
-    int getWidth() { return width_; }
-    int getHeight() { return height_    ; }
+    int getWidth() const { return width_; }
+    int getHeight() const { return height_    ; }
     void scale(int scaleToWidth, int scaleToHeight);
     void resizeToConsole();
-    void drawWindow();
+    void drawWindow() const;
 };  
 
-CImage::CImage(const std::string& filepath){
+CImage::CImage(const string& filepath){
     imageData_ = stbi_load(filepath.c_str(), &width_, &height_, &bpp_, 3);
+    //the bpp is always the info about bpp of the original image but the stb will force and make it 3 or any number, unless it is set to 0 (last parameter of the load function)
+    if(bpp_ != 3){
+        bpp_ = 3;
+    }
+    if(imageData_ == NULL){
+        throw invalid_argument("Image wasn't loaded!\n");
+    }
 }
 
 CImage::CImage(const CImage & toCopy, int scaleToWidth, int scaleToHeight) 
@@ -36,6 +50,7 @@ CImage::CImage(const CImage & toCopy, int scaleToWidth, int scaleToHeight)
     height_(scaleToHeight),
     bpp_(toCopy.bpp_)
 {
+    
     uint8_t * newImageData = new uint8_t [scaleToWidth * scaleToHeight * bpp_];
     for(int i = 0; i < scaleToHeight; ++i){
         for(int j = 0; j < scaleToWidth; ++j){
@@ -82,28 +97,62 @@ void CImage::resizeToConsole(){
         }
     }
     delete imageData_; 
-    imageData_ = newImageData;
+    imageData_ = newImageData;      
     width_ = newWidth;
 }
 
-void CImage::drawWindow(){
+void CImage::drawWindow() const {
+    const char palette[] = {' ','.' ,'\'' ,'`' ,'^' ,'\"' ,',' ,':' ,';' ,'I' ,'l' ,'!' ,'i' ,'>' ,'<' ,'~' ,'+' ,'_' ,'-' ,'?' ,']' ,'[' ,'}' ,'{' ,'1' ,')' ,'(' ,'|' ,'\\' ,'/' ,'t' ,'f' ,'j' ,'r' ,'x' ,'n' ,'u' ,'v' ,'c' ,'z' ,'X' ,'Y' ,'U' ,'J' ,'C' ,'L' ,'Q' ,'0' ,'O' ,'Z' ,'m' ,'w' ,'q' ,'p' ,'d' ,'b' ,'k' ,'h' ,'a' ,'o' ,'*' ,'#' ,'M' ,'W' ,'&' ,'8' ,'%' ,'B' ,'@' ,'$' };
+    //use that one later
+    const char smallPalete[] =  { ' ', '.', ':', '-', '=', '+', '*', '#', '%', '@'};
+    /*
+    for(int i = 0; i < 100; ++i){
+        printw("%d %c |", i, palette[i]);
+    }
+    refresh();
+    getch();
+    */
+    int paletteMaxIndex = 69;
     for(int i = 0; i < height_; ++i){
         for(int j = 0; j < width_; ++j){
-            if(imageData_[(i * width_ + j) * bpp_ + 0] < 128){
-                mvaddch(i, j, '.');
-            } else {
-                mvaddch(i, j, '#');
-            }
+            float normVal = (float) imageData_[(i * width_ + j) * bpp_ + 0] / 255.0;
+            int paletteIndex = (int) (round(normVal * (float) (paletteMaxIndex)) + 0.01);
+            mvaddch(i, j, palette[paletteIndex]);
         }
     }
 }
 
-int main(void){
-    CImage image("ship.png");
-    
+void initCurses(){
     initscr();
     noecho();
     clear();
+}
+
+void exitCurses(){
+    endwin();
+}
+
+int main(int argc, const char *argv[]){
+    //init ncurses
+    initCurses();
+    
+    SParsedInput parsedInput;
+    unique_ptr<CImage> image;
+    try{
+        parsedInput = CInputParser::parseInput(argc, argv);
+        image = make_unique<CImage>(parsedInput.relativeFilepathToImage_);
+    } catch (const invalid_argument& ia){
+        initCurses();
+        printw(ia.what());
+        printw("\nPress any key to end...\n");
+        refresh();
+        getch();
+        exitCurses();
+        return 1;
+    }
+    
+    //init ncurses
+    initCurses();
     
     //image.resizeToConsole();
     //image.scale(32, 16);
@@ -113,8 +162,8 @@ int main(void){
         int cols, rows;
         getmaxyx(stdscr, rows, cols);
         
-        int width = image.getWidth();
-        int height = image.getHeight();
+        int width = image->getWidth();
+        int height = image->getHeight();
         
         float scaleX = ((float) cols / 2.0) / (float) width;
         float scaleY = (float) rows / (float) height;
@@ -141,7 +190,8 @@ int main(void){
             prevRows = rows;
             clear();
         }
-        CImage currentImage(image, newSizeX, newSizeY);
+        
+        CImage currentImage((*image), newSizeX, newSizeY);
         
         /*
         printw("scaleX: %f scaleY: %f, scale factor %f \n", scaleX, scaleY, scaleFactor);
@@ -153,5 +203,6 @@ int main(void){
         refresh();
     }
     
+    exitCurses();
     return 0;   
 }
