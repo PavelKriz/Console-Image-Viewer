@@ -1,25 +1,22 @@
-#include <ncurses.h> 
-#include <string>
-#include <stdexcept>
-#include <memory>
+#include "CApplication.hpp"
 
-#include "CInputParser.hpp"
-#include "SParsedInput.hpp"
-#include "CImage.hpp"
 
-using namespace std;
-
-void initCurses(){
+void CApplication::initCurses(){
     initscr();
     noecho();
     clear();
 }
 
-void exitCurses(){
+void CApplication::exitCurses(){
     endwin();
 }
 
-int main(int argc, const char *argv[]){
+CApplication::CApplication(){
+    initCurses();
+    parsedInput_ = CInputParser::parseInput(argc, argv);
+}
+
+int CApplication::run(){
     //init ncurses
     initCurses();
     
