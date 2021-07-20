@@ -13,12 +13,11 @@ void CApplication::exitCurses(){
 
 CApplication::CApplication(){
     initCurses();
-    parsedInput_ = CInputParser::parseInput(argc, argv);
 }
 
-int CApplication::run(){
+int CApplication::run(int argc, const char *argv[]){
     //init ncurses
-    initCurses();
+    //initCurses();
     
     SParsedInput parsedInput;
     unique_ptr<CImage> image;
@@ -34,9 +33,6 @@ int CApplication::run(){
         exitCurses();
         return 1;
     }
-    
-    //init ncurses
-    initCurses();
     
     int prevCols = 0;
     int prevRows = 0;

@@ -1,16 +1,23 @@
 #pragma once
 
-#include "CInputParser"
+#include <ncurses.h> 
+#include <string>
+#include <memory>
+#include <stdexcept>
 
-class CApllication{
+#include "CInputParser.hpp"
+#include "SParsedInput.hpp"
+#include "CImage.hpp"
+
+class CApplication{
     SParsedInput parsedInput_;
-    initCurses();
-    exitCurses();
+    void initCurses();
+    void exitCurses();
     //TODO
     //checkInput();
 public:
     //throw exceotions
-    CApplication(int argc, const char *argv[]);
+    CApplication();
     //throw exceotions
-    int run();
-}
+    int run(int argc, const char *argv[]);
+};
