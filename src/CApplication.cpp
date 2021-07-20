@@ -1,7 +1,9 @@
 #include "CApplication.hpp"
 
+bool CApplication::cursesInitialised_ = false;
 
 void CApplication::initCurses(){
+    cursesInitialised_ = true;
     initscr();
     noecho();
     clear();
@@ -11,37 +13,23 @@ void CApplication::exitCurses(){
     endwin();
 }
 
-CApplication::CApplication(){
+
+CApplication::CApplication(int argc, const char *argv[]){
     initCurses();
+    parsedInput_ = CInputParser::parseInput(argc, argv);
+    image_ = make_unique<CImage>(parsedInput_.relativeFilepathToImage_);
 }
 
-int CApplication::run(int argc, const char *argv[]){
-    //init ncurses
-    //initCurses();
-    
-    SParsedInput parsedInput;
-    unique_ptr<CImage> image;
-    try{
-        parsedInput = CInputParser::parseInput(argc, argv);
-        image = make_unique<CImage>(parsedInput.relativeFilepathToImage_);
-    } catch (const invalid_argument& ia){
-        initCurses();
-        printw(ia.what());
-        printw("\nPress any key to end...\n");
-        refresh();
-        getch();
-        exitCurses();
-        return 1;
-    }
-    
+int CApplication::run(){
+
     int prevCols = 0;
     int prevRows = 0;
     while(true){
         int cols, rows;
         getmaxyx(stdscr, rows, cols);
         
-        int width = image->getWidth();
-        int height = image->getHeight();
+        int width = image_->getWidth();
+        int height = image_->getHeight();
         
         float scaleX = ((float) cols / 2.0) / (float) width;
         float scaleY = (float) rows / (float) height;
@@ -69,7 +57,7 @@ int CApplication::run(int argc, const char *argv[]){
             clear();
         }
         
-        CImage currentImage((*image), newSizeX, newSizeY);
+        CImage currentImage((*image_), newSizeX, newSizeY);
         
         /*
         printw("scaleX: %f scaleY: %f, scale factor %f \n", scaleX, scaleY, scaleFactor);
@@ -83,4 +71,17 @@ int CApplication::run(int argc, const char *argv[]){
     
     exitCurses();
     return 0;   
+}
+
+
+int CApplication::handleErrors(const exception &e){
+    if(!cursesInitialised_){
+        initCurses();
+    }
+    printw(e.what());
+    printw("\nPress any key to end...\n");
+    refresh();
+    getch();
+    exitCurses();
+    return 1;
 }

@@ -10,14 +10,16 @@
 #include "CImage.hpp"
 
 class CApplication{
+    static bool cursesInitialised_; //false in the beggining
     SParsedInput parsedInput_;
-    void initCurses();
-    void exitCurses();
-    //TODO
-    //checkInput();
+    unique_ptr<CImage> image_;
+    static void initCurses();
+    static void exitCurses();
 public:
     //throw exceotions
-    CApplication();
+    CApplication(int argc, const char *argv[]);
     //throw exceotions
-    int run(int argc, const char *argv[]);
+    int run();
+    //handle exception
+    static int handleErrors(const exception &e);
 };
