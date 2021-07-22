@@ -64,7 +64,14 @@ int CApplication::run(){
         printw("cols: %d rows: %d \n", cols, rows);
         printw("newSizeY: %d newSizeX: %d \n", newSizeY, newSizeX);
         */
-        currentImage.drawWindow();
+        SProcessingInfo processingInfo;
+        if(parsedInput_.grayscale_ == SParsedInput::EGrayscale::BROAD){
+            processingInfo.grayscale_ = SProcessingInfo::EGrayscale::BROAD;
+        } else {
+            processingInfo.grayscale_ = SProcessingInfo::EGrayscale::SIMPLE;
+        }
+        
+        currentImage.drawWindow(processingInfo);
         //printw("newSizeY: %d newSizeX: %d \n", newSizeY, newSizeX);
         refresh();
     }

@@ -10,7 +10,7 @@ CImage::CImage(const string& filepath){
         bpp_ = 3;
     }
     if(imageData_ == NULL){
-        throw invalid_argument("Image wasn't loaded!\n");
+        throw invalid_argument("Image wasn't loaded!\nThe filepath of the image might not be correct.\n");
     }
 }
 
@@ -72,18 +72,36 @@ void CImage::resizeToConsole(){
     width_ = newWidth;
 }
 
-void CImage::drawWindow() const {
-    const char palette[] = {' ','.' ,'\'' ,'`' ,'^' ,'\"' ,',' ,':' ,';' ,'I' ,'l' ,'!' ,'i' ,'>' ,'<' ,'~' ,'+' ,'_' ,'-' ,'?' ,']' ,'[' ,'}' ,'{' ,'1' ,')' ,'(' ,'|' ,'\\' ,'/' ,'t' ,'f' ,'j' ,'r' ,'x' ,'n' ,'u' ,'v' ,'c' ,'z' ,'X' ,'Y' ,'U' ,'J' ,'C' ,'L' ,'Q' ,'0' ,'O' ,'Z' ,'m' ,'w' ,'q' ,'p' ,'d' ,'b' ,'k' ,'h' ,'a' ,'o' ,'*' ,'#' ,'M' ,'W' ,'&' ,'8' ,'%' ,'B' ,'@' ,'$' };
-    //use that one later
-    const char smallPalete[] =  { ' ', '.', ':', '-', '=', '+', '*', '#', '%', '@'};
+void CImage::drawWindow(const SProcessingInfo& processingInfo) const {
+    vector<char> palette;
+    size_t paletteMaxIndex = 0;
+    
+    const char broadPalette[] = {' ','.' ,'\'' ,'`' ,'^' ,'\"' ,',' ,':' ,';' ,'I' ,'l' ,'!' ,'i' ,'>' ,'<' ,'~' ,'+' ,'_' ,'-' ,'?' ,']' ,'[' ,'}' ,'{' ,'1' ,')' ,'(' ,'|' ,'\\' ,'/' ,'t' ,'f' ,'j' ,'r' ,'x' ,'n' ,'u' ,'v' ,'c' ,'z' ,'X' ,'Y' ,'U' ,'J' ,'C' ,'L' ,'Q' ,'0' ,'O' ,'Z' ,'m' ,'w' ,'q' ,'p' ,'d' ,'b' ,'k' ,'h' ,'a' ,'o' ,'*' ,'#' ,'M' ,'W' ,'&' ,'8' ,'%' ,'B' ,'@' ,'$' };
+    
+    int broadPaletteMaxIndex = 69;
+    const char simplePalete[] =  { ' ', '.', ':', '-', '=', '+', '*', '#', '%', '@'};
+    int simplePaletteMaxIndex = 9;
+    if(processingInfo.grayscale_ == SProcessingInfo::EGrayscale::BROAD){
+        for(size_t i = 0; i <= broadPaletteMaxIndex; ++i){
+            palette.push_back(broadPalette[i]);
+        }
+        paletteMaxIndex = broadPaletteMaxIndex;
+    } else {
+        for(size_t i = 0; i <= simplePaletteMaxIndex; ++i){
+            palette.push_back(simplePalete[i]);
+        }
+        paletteMaxIndex = simplePaletteMaxIndex;
+    }
+    
     /*
-    for(int i = 0; i < 100; ++i){
+    for(int i = 0; i <= paletteMaxIndex; ++i){
         printw("%d %c |", i, palette[i]);
     }
     refresh();
     getch();
     */
-    int paletteMaxIndex = 69;
+    
+    
     for(int i = 0; i < height_; ++i){
         for(int j = 0; j < width_; ++j){
             float normVal = (float) imageData_[(i * width_ + j) * bpp_ + 0] / 255.0;
@@ -92,3 +110,5 @@ void CImage::drawWindow() const {
         }
     }
 }
+
+

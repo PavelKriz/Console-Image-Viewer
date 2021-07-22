@@ -4,6 +4,9 @@
 #include <string>
 #include <math.h>
 #include <stdexcept>
+#include <vector>
+
+#include "SProcessingInfo.hpp"
 
 
 using namespace std;
@@ -25,5 +28,5 @@ public:
     int getHeight() const { return height_    ; }
     void scale(int scaleToWidth, int scaleToHeight);
     void resizeToConsole();
-    void drawWindow() const;
+    void drawWindow(const SProcessingInfo& processingInfo) const;
 };  
