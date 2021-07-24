@@ -23,7 +23,7 @@ CApplication::CApplication(int argc, const char *argv[]){
         parsedInput_ = CInputParser::parseInput(argc, argv);
         image_ = make_unique<CImage>(parsedInput_.relativeFilepathToImage_);
     } catch (const invalid_argument& ia){
-        printw("Error occured\n");
+        printw("Error occurred\n");
         printw(ia.what());
         printw("\nPress any key to end...\n");
         refresh();
@@ -37,7 +37,9 @@ int CApplication::run(){
 
     int prevCols = 0;
     int prevRows = 0;
+    CLoopTimeManager loopTimeManager;
     while(true){
+        loopTimeManager.loopBegin();
         int cols, rows;
         getmaxyx(stdscr, rows, cols);
         
@@ -67,26 +69,33 @@ int CApplication::run(){
         if(prevCols != cols || prevRows != rows){
             prevCols = cols;
             prevRows = rows;
+
+            //prepare the image
+            CImage currentImage((*image_), newSizeX, newSizeY);
+        
+            /*
+            printw("scaleX: %f scaleY: %f, scale factor %f \n", scaleX, scaleY, scaleFactor);
+            printw("cols: %d rows: %d \n", cols, rows);
+            printw("newSizeY: %d newSizeX: %d \n", newSizeY, newSizeX);
+            */
+            SProcessingInfo processingInfo;
+            if(parsedInput_.grayscale_ == SParsedInput::EGrayscale::BROAD){
+                processingInfo.grayscale_ = SProcessingInfo::EGrayscale::BROAD;
+            } else {
+                processingInfo.grayscale_ = SProcessingInfo::EGrayscale::SIMPLE;
+            }
+
+            //draw the image
+            //first clear
             clear();
+            //then draw
+            currentImage.drawWindow(processingInfo);
         }
-        
-        CImage currentImage((*image_), newSizeX, newSizeY);
-        
-        /*
-        printw("scaleX: %f scaleY: %f, scale factor %f \n", scaleX, scaleY, scaleFactor);
-        printw("cols: %d rows: %d \n", cols, rows);
-        printw("newSizeY: %d newSizeX: %d \n", newSizeY, newSizeX);
-        */
-        SProcessingInfo processingInfo;
-        if(parsedInput_.grayscale_ == SParsedInput::EGrayscale::BROAD){
-            processingInfo.grayscale_ = SProcessingInfo::EGrayscale::BROAD;
-        } else {
-            processingInfo.grayscale_ = SProcessingInfo::EGrayscale::SIMPLE;
-        }
-        
-        currentImage.drawWindow(processingInfo);
-        //printw("newSizeY: %d newSizeX: %d \n", newSizeY, newSizeX);
         refresh();
+
+        loopTimeManager.loopEnd();
+        //printw("sleep duration: %f", loopTimeManager.getSleepTime());
+        loopTimeManager.sleep();
     }
     
     exitCurses();

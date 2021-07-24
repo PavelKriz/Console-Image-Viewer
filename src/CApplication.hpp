@@ -5,6 +5,7 @@
 #include <memory>
 #include <stdexcept>
 
+#include "CLoopTimeManager.hpp"
 #include "CInputParser.hpp"
 #include "SParsedInput.hpp"
 #include "CImage.hpp"
@@ -16,8 +17,8 @@ class CApplication{
     static void initCurses();
     static void exitCurses();
 public:
-    //throw exceotions
+    //throw exceptions
     CApplication(int argc, const char *argv[]);
-    //throw exceotions
+    //throw exceptions
     int run();
 };
