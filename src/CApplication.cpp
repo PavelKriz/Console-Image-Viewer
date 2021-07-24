@@ -3,21 +3,34 @@
 bool CApplication::cursesInitialised_ = false;
 
 void CApplication::initCurses(){
-    cursesInitialised_ = true;
-    initscr();
-    noecho();
-    clear();
+    if(!cursesInitialised_){
+        cursesInitialised_ = true;
+        initscr();
+        noecho();
+        clear();
+    }
 }
 
 void CApplication::exitCurses(){
-    endwin();
+    if(cursesInitialised_){
+        endwin();
+    }
 }
 
-
 CApplication::CApplication(int argc, const char *argv[]){
-    initCurses();
-    parsedInput_ = CInputParser::parseInput(argc, argv);
-    image_ = make_unique<CImage>(parsedInput_.relativeFilepathToImage_);
+    try{
+        initCurses();
+        parsedInput_ = CInputParser::parseInput(argc, argv);
+        image_ = make_unique<CImage>(parsedInput_.relativeFilepathToImage_);
+    } catch (const invalid_argument& ia){
+        printw("Error occured\n");
+        printw(ia.what());
+        printw("\nPress any key to end...\n");
+        refresh();
+        getch();
+        exitCurses();
+        throw 1;
+    }
 }
 
 int CApplication::run(){
@@ -80,15 +93,3 @@ int CApplication::run(){
     return 0;   
 }
 
-
-int CApplication::handleErrors(const exception &e){
-    if(!cursesInitialised_){
-        initCurses();
-    }
-    printw(e.what());
-    printw("\nPress any key to end...\n");
-    refresh();
-    getch();
-    exitCurses();
-    return 1;
-}

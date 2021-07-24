@@ -20,6 +20,4 @@ public:
     CApplication(int argc, const char *argv[]);
     //throw exceotions
     int run();
-    //handle exception
-    static int handleErrors(const exception &e);
 };
