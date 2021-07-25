@@ -8,10 +8,10 @@
 
 
 CImage::CImage(const string& filepath){
-    imageData_ = stbi_load(filepath.c_str(), &width_, &height_, &bpp_, 3);
+    imageData_ = stbi_load(filepath.c_str(), &width_, &height_, &bpp_, 1);
     //the bpp is always the info about bpp of the original image but the stb will force and make it 3 or any number, unless it is set to 0 (last parameter of the load function)
-    if(bpp_ != 3){
-        bpp_ = 3;
+    if(bpp_ != 1){
+        bpp_ = 1;
     }
     if(imageData_ == NULL){
         throw invalid_argument("Image wasn't loaded!\nThe filepath of the image might not be correct.\n");
@@ -25,7 +25,6 @@ CImage::CImage(const CImage & toCopy, int scaleToWidth, int scaleToHeight)
     height_(scaleToHeight),
     bpp_(toCopy.bpp_)
 {
-    
     uint8_t * newImageData = new uint8_t [scaleToWidth * scaleToHeight * bpp_];
     stbir_resize_uint8(toCopy.imageData_, toCopy.width_, toCopy.height_, 0,
                        newImageData, scaleToWidth, scaleToHeight, 0, bpp_);
