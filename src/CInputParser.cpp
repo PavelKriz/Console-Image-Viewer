@@ -14,19 +14,19 @@ const string CInputParser::help_ = "Usage is following:\n"
                                    "basic usage: CIViewer [relative path to the image to be displayed] [arguments]\n"
                                    "\n"
                                    "Possible arguments are following:\n"
-                                   "-h      for help\n"
-                                   "-s      for choosing the display scale\n"
+                                   "-h          for help\n"
+                                   "-s [value]  for choosing the display scale\n"
                                    "    following argument has to be:\n"
                                    "    [simple] or [broad] (default)\n"
-                                   "    eg: -s simple\n";
+                                   "    eg: -s simple\n"
+                                   "-dhe    disables histogram equalisation\n";
                                    
-                                   
-
 SParsedInput CInputParser::parseInput(int argc, const char *argv[]){
     
     SParsedInput parsedInput;
     //default values
     parsedInput.grayscale_ = SParsedInput::EGrayscale::BROAD;
+    parsedInput.histogramEqualisation_ = true;
     
     vector<bool> used(argc, false);
     used[0] = true;
@@ -52,6 +52,10 @@ SParsedInput CInputParser::parseInput(int argc, const char *argv[]){
     	    used[i] = true;
    	        throw invalid_argument(help_);
     	}
+        if(strcmp(argv[i], "-dhe") == 0){
+            used[i] = true;
+            parsedInput.histogramEqualisation_ = false;
+        }
     }
     
     for(size_t i = 0; i < argc; ++i){

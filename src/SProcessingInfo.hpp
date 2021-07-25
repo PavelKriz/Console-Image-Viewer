@@ -5,5 +5,6 @@ struct SProcessingInfo{
         BROAD,
         SIMPLE
     };
+    bool histogramEqualisation_;
     EGrayscale grayscale_ = SProcessingInfo::EGrayscale::BROAD;
 };

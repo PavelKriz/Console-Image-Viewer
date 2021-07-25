@@ -84,10 +84,15 @@ int CApplication::run(){
             } else {
                 processingInfo.grayscale_ = SProcessingInfo::EGrayscale::SIMPLE;
             }
+            processingInfo.histogramEqualisation_ = parsedInput_.histogramEqualisation_;
 
             //draw the image
             //first clear
             clear();
+            //equalise
+            if(processingInfo.histogramEqualisation_){
+                currentImage.equaliseHistogram();
+            }
             //then draw
             currentImage.drawWindow(processingInfo);
         }
