@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <vector>
 #include <map>
+#include <limits>
 
 #include "SProcessingInfo.hpp"
 

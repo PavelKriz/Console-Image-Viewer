@@ -71,14 +71,22 @@ void CImage::equaliseHistogram(){
     int total = width_ * height_ * bpp_;
     vector<double> CDF(256, 0.0);
     double sum = 0;
+    int minIndex = 0;
+    bool minNotFound = true;
     for(int i = 0; i < 256; ++i){
         sum += (double) histogram.at(i) / (double) total;
+        if(minNotFound){
+            if(abs(sum) - abs((double) 0.0) >= numeric_limits<double>::epsilon()){
+                minIndex = i;
+                minNotFound = false;
+            }
+        }
         CDF[i] = sum;
     }
 
     uint8_t * equlisedImageData = new uint8_t[width_ * height_ * bpp_];
     for(int i = 0; i < width_ * height_ * bpp_; ++i){
-        equlisedImageData[i] = ((CDF[imageData_[i]] - CDF[0])/ ( (double) 1.0 - CDF[0])) * 255.0 + 0.00001;
+        equlisedImageData[i] = ((CDF[imageData_[i]] - CDF[minIndex])/ ( (double) 1.0 - CDF[minIndex])) * 255.0 + 0.00001;
     }
 
     delete [] imageData_;
