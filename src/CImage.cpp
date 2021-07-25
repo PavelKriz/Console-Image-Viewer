@@ -3,6 +3,10 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+#define STB_IMAGE_RESIZE_IMPLEMENTATION
+#include "stb_image_resize.h"
+
+
 CImage::CImage(const string& filepath){
     imageData_ = stbi_load(filepath.c_str(), &width_, &height_, &bpp_, 3);
     //the bpp is always the info about bpp of the original image but the stb will force and make it 3 or any number, unless it is set to 0 (last parameter of the load function)
@@ -23,15 +27,9 @@ CImage::CImage(const CImage & toCopy, int scaleToWidth, int scaleToHeight)
 {
     
     uint8_t * newImageData = new uint8_t [scaleToWidth * scaleToHeight * bpp_];
-    for(int i = 0; i < scaleToHeight; ++i){
-        for(int j = 0; j < scaleToWidth; ++j){
-            int pixelX = fromNormCoord( toNormCoord(j, scaleToWidth), toCopy.width_);
-            int pixelY = fromNormCoord( toNormCoord(i, scaleToHeight), toCopy.height_);
-            for(int k = 0; k < bpp_; ++k){
-                newImageData[(i * scaleToWidth + j ) * bpp_ + k] = toCopy.imageData_[(pixelY * toCopy.width_ + pixelX) * bpp_ + k];
-            }            
-        }
-    }
+    stbir_resize_uint8(toCopy.imageData_, toCopy.width_, toCopy.height_, 0,
+                       newImageData, scaleToWidth, scaleToHeight, 0, bpp_);
+
     imageData_ = newImageData;
 }
 
