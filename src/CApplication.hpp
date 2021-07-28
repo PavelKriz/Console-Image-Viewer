@@ -6,6 +6,7 @@
 #include <stdexcept>
 
 #include "CLoopTimeManager.hpp"
+#include "CInputHandler.hpp"
 #include "CInputParser.hpp"
 #include "SParsedInput.hpp"
 #include "CImage.hpp"

@@ -38,7 +38,8 @@ int CApplication::run(){
     int prevCols = 0;
     int prevRows = 0;
     CLoopTimeManager loopTimeManager;
-    while(true){
+    CInputHandler inputHandler;
+    while(!inputHandler.end()){
         loopTimeManager.loopBegin();
         int cols, rows;
         getmaxyx(stdscr, rows, cols);
@@ -97,6 +98,9 @@ int CApplication::run(){
             currentImage.drawWindow(processingInfo);
         }
         refresh();
+
+        //get the input
+        inputHandler.getInputSignals();
 
         loopTimeManager.loopEnd();
         //printw("sleep duration: %f", loopTimeManager.getSleepTime());
