@@ -19,7 +19,8 @@ const string CInputParser::help_ = "Usage is following:\n"
                                    "    following argument has to be:\n"
                                    "    [simple] or [broad] (default)\n"
                                    "    eg: -s simple\n"
-                                   "-dhe    disables histogram equalisation\n";
+                                   "-dhe    disables histogram equalisation\n"
+                                   "(Program can be quit by pressing q or Q)";
                                    
 SParsedInput CInputParser::parseInput(int argc, const char *argv[]){
     
