@@ -26,7 +26,7 @@ SParsedInput CInputParser::parseInput(int argc, const char *argv[]){
     
     SParsedInput parsedInput;
     //default values
-    parsedInput.grayscale_ = SParsedInput::EGrayscale::BROAD;
+    parsedInput.grayscale_ = SParsedInput::EGrayscale::SIMPLE;
     parsedInput.histogramEqualisation_ = true;
     
     vector<bool> used(argc, false);
