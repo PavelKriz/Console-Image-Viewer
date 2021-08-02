@@ -8,7 +8,7 @@
 
 using namespace std;
 
-const string CInputParser::basicUsage_ = "Basic usage is following: CIViewer [relative path to the image to be displayed]";
+const string CInputParser::quickHelp_ = "Try help: \"CIViewer -h\" or:\nBasic usage is following: CIViewer [relative path to the image to be displayed]";
 
 const string CInputParser::help_ = "Usage is following:\n"
                                    "basic usage: CIViewer [relative path to the image to be displayed] [arguments]\n"
@@ -32,12 +32,16 @@ SParsedInput CInputParser::parseInput(int argc, const char *argv[]){
     vector<bool> used(argc, false);
     used[0] = true;
     
+    if(argc <= 1){
+        throw invalid_argument("Too few arguments!\n" + quickHelp_);
+    }
+
     for(int i = 0; i < argc; ++i){
     	if(strcmp(argv[i], "-s") == 0){
    	        used[i] = true;
    	        ++i;
    	        if(i >= argc){
-   	            throw invalid_argument("Invalid arguments! Try help: \"CIViewer -h\" or:\n" + basicUsage_);
+   	            throw invalid_argument("Invalid arguments!\n" + quickHelp_);
    	        }
    	        used[i] = true;
    	        
@@ -46,7 +50,7 @@ SParsedInput CInputParser::parseInput(int argc, const char *argv[]){
    	        } else if (strcmp(argv[i], "simple") == 0){
    	            parsedInput.grayscale_ = SParsedInput::EGrayscale::SIMPLE;
    	        } else {
-   	            throw invalid_argument("Invalid arguments! Try help: \"CIViewer -h\" or:\n" + basicUsage_);
+   	            throw invalid_argument("Invalid arguments!" + quickHelp_);
    	        }
     	}
     	if(strcmp(argv[i], "-h") == 0){

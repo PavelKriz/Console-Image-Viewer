@@ -23,7 +23,6 @@ CApplication::CApplication(int argc, const char *argv[]){
         parsedInput_ = CInputParser::parseInput(argc, argv);
         image_ = make_unique<CImage>(parsedInput_.relativeFilepathToImage_);
     } catch (const invalid_argument& ia){
-        printw("Error occurred\n");
         printw(ia.what());
         printw("\nPress any key to end...\n");
         refresh();
