@@ -110,9 +110,9 @@ void CImage::drawWindow(const SProcessingInfo& processingInfo) const {
     
     const char broadPalette[] = {' ','.' ,'\'' ,'`' ,'^' ,'\"' ,',' ,':' ,';' ,'I' ,'l' ,'!' ,'i' ,'>' ,'<' ,'~' ,'+' ,'_' ,'-' ,'?' ,']' ,'[' ,'}' ,'{' ,'1' ,')' ,'(' ,'|' ,'\\' ,'/' ,'t' ,'f' ,'j' ,'r' ,'x' ,'n' ,'u' ,'v' ,'c' ,'z' ,'X' ,'Y' ,'U' ,'J' ,'C' ,'L' ,'Q' ,'0' ,'O' ,'Z' ,'m' ,'w' ,'q' ,'p' ,'d' ,'b' ,'k' ,'h' ,'a' ,'o' ,'*' ,'#' ,'M' ,'W' ,'&' ,'8' ,'%' ,'B' ,'@' ,'$' };
     
-    int broadPaletteMaxIndex = 69;
+    size_t broadPaletteMaxIndex = 69;
     const char simplePalette[] =  { ' ', '.', ':', '-', '=', '+', '*', '#', '%', '@'};
-    int simplePaletteMaxIndex = 9;
+    size_t simplePaletteMaxIndex = 9;
     if(processingInfo.grayscale_ == SProcessingInfo::EGrayscale::BROAD){
         for(size_t i = 0; i <= broadPaletteMaxIndex; ++i){
             palette.push_back(broadPalette[i]);
