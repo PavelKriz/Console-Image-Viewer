@@ -6,20 +6,20 @@
 #include <stdexcept>
 
 #include "CLoopTimeManager.hpp"
+#include "CConsoleOperator.hpp"
 #include "CInputHandler.hpp"
 #include "CInputParser.hpp"
 #include "SParsedInput.hpp"
-#include "CImage.hpp"
+#include "CImageOperator.hpp"
 
 class CApplication{
-    static bool cursesInitialised_; //false in the beggining
+    CConsoleOperator * consoleOperator_ = nullptr;
     SParsedInput parsedInput_;
-    unique_ptr<CImage> image_;
-    static void initCurses();
-    static void exitCurses();
+    unique_ptr<CImageOperator> imageOperator_;
 public:
     //throw exceptions
     CApplication(int argc, const char *argv[]);
+    ~CApplication();
     //throw exceptions
     int run();
 };

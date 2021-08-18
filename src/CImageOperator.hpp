@@ -13,7 +13,7 @@
 
 using namespace std;
 
-class CImage{
+class CImageOperator{
     uint8_t * imageData_;
     int width_;
     int height_;
@@ -27,14 +27,15 @@ class CImage{
     //not used anymore
     void resizeToConsole();
 public:
-    CImage(const string& filepath);
-    CImage(const CImage & toCopy, int scaleToWidth, int scaleToHeight);
-    ~CImage();
+    CImageOperator(const string& filepath);
+    CImageOperator(const CImageOperator & toCopy, int scaleToWidth, int scaleToHeight);
+    ~CImageOperator();
     
     //equalise image if it wasn't equalised before
     void equaliseHistogram();
     void scale(int scaleToWidth, int scaleToHeight);
-    void drawWindow(const SProcessingInfo& processingInfo) const;
+    vector<vector<char>> drawWindow(const SProcessingInfo& processingInfo) const;
+    vector<vector<char>> getAsciiImage(const SProcessingInfo& processingInfo, int width, int height);
     
     int getWidth() const { return width_; }
     int getHeight() const { return height_; }

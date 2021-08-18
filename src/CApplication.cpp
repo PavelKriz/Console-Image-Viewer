@@ -1,34 +1,25 @@
 #include "CApplication.hpp"
 
-bool CApplication::cursesInitialised_ = false;
-
-void CApplication::initCurses(){
-    if(!cursesInitialised_){
-        cursesInitialised_ = true;
-        initscr();
-        noecho();
-        clear();
-    }
-}
-
-void CApplication::exitCurses(){
-    if(cursesInitialised_){
-        endwin();
-    }
-}
-
 CApplication::CApplication(int argc, const char *argv[]){
     try{
-        initCurses();
+        consoleOperator_ = new CConsoleOperator();
         parsedInput_ = CInputParser::parseInput(argc, argv);
-        image_ = make_unique<CImage>(parsedInput_.relativeFilepathToImage_);
+        imageOperator_ = make_unique<CImageOperator>(parsedInput_.relativeFilepathToImage_);
     } catch (const invalid_argument& ia){
         printw(ia.what());
         printw("\nPress any key to end...\n");
         refresh();
         getch();
-        exitCurses();
+        if(consoleOperator_ != nullptr){
+            delete consoleOperator_;
+        }
         throw 1;
+    }
+}
+
+CApplication::~CApplication(){
+    if(consoleOperator_ != nullptr){
+        delete consoleOperator_;
     }
 }
 
@@ -38,13 +29,17 @@ int CApplication::run(){
     int prevRows = 0;
     CLoopTimeManager loopTimeManager;
     CInputHandler inputHandler;
+    CConsoleOperator consoleOperator;
+
     while(!inputHandler.end()){
         loopTimeManager.loopBegin();
         int cols, rows;
         getmaxyx(stdscr, rows, cols);
-        
-        int width = image_->getWidth();
-        int height = image_->getHeight();
+        pair<uint_fast32_t, uint_fast32_t> consoleSize = CConsoleOperator::getConsoleSize();
+        cols = consoleSize.first;
+        rows = consoleSize.second;
+        int width = imageOperator_->getWidth();
+        int height = imageOperator_->getHeight();
         
         float scaleX = ((float) cols / 2.0) / (float) width;
         float scaleY = (float) rows / (float) height;
@@ -71,7 +66,7 @@ int CApplication::run(){
             prevRows = rows;
 
             //prepare the image
-            CImage currentImage((*image_), newSizeX, newSizeY);
+            CImageOperator currentImageOperator((*imageOperator_), newSizeX, newSizeY);
         
             /*
             printw("scaleX: %f scaleY: %f, scale factor %f \n", scaleX, scaleY, scaleFactor);
@@ -91,10 +86,12 @@ int CApplication::run(){
             clear();
             //equalise
             if(processingInfo.histogramEqualisation_){
-                currentImage.equaliseHistogram();
+                currentImageOperator.equaliseHistogram();
             }
             //then draw
-            currentImage.drawWindow(processingInfo);
+            auto retCharImage = currentImageOperator.drawWindow(processingInfo);
+            
+            consoleOperator.drawImage(retCharImage);
         }
         refresh();
 
@@ -106,7 +103,6 @@ int CApplication::run(){
         loopTimeManager.sleep();
     }
     
-    exitCurses();
     return 0;   
 }
 
