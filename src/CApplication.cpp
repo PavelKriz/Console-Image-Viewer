@@ -24,13 +24,30 @@ CApplication::~CApplication(){
 }
 
 int CApplication::run(){
+    SProcessingInfo processingInfo;
+        if(parsedInput_.grayscale_ == SParsedInput::EGrayscale::BROAD){
+            processingInfo.grayscale_ = SProcessingInfo::EGrayscale::BROAD;
+        } else {
+            processingInfo.grayscale_ = SProcessingInfo::EGrayscale::SIMPLE;
+        }
+    processingInfo.histogramEqualisation_ = parsedInput_.histogramEqualisation_;
+
+
+    //there is only file output
+    if(parsedInput_.fileOutput_.is_){
+        CFileSaver fileSaver(parsedInput_.fileOutput_.relativeFilepath_);
+        float ratio = (float) imageOperator_->getOriginalHeight() / (float) imageOperator_->getOriginalWidth();
+        imageOperator_->onResize( processingInfo, parsedInput_.fileOutput_.width_, (int) parsedInput_.fileOutput_.width_ * ratio * 0.5);
+        auto retVect = imageOperator_->drawWindow(processingInfo);
+        fileSaver.safeFile(retVect);
+        return 0;
+    }
 
     int prevCols = 0;
     int prevRows = 0;
     CLoopTimeManager loopTimeManager;
     CInputHandler inputHandler;
     CConsoleOperator consoleOperator;
-
     while(!inputHandler.end()){
         loopTimeManager.loopBegin();
         int cols, rows;
@@ -38,58 +55,37 @@ int CApplication::run(){
         pair<uint_fast32_t, uint_fast32_t> consoleSize = CConsoleOperator::getConsoleSize();
         cols = consoleSize.first;
         rows = consoleSize.second;
-        int width = imageOperator_->getWidth();
-        int height = imageOperator_->getHeight();
         
-        float scaleX = ((float) cols / 2.0) / (float) width;
-        float scaleY = (float) rows / (float) height;
-        
-        float scaleFactor = 0.0;
-        if(scaleX > scaleY){
-            //scale along x
-            scaleFactor = scaleY;
-        } else {
-            //scale along y
-            scaleFactor = scaleX;
-        }
-        
-        int newSizeX = scaleFactor * width * 2;
-        int newSizeY = scaleFactor * height;
-        
-        /*
-        printw("y: %d x: %d", rows, cols);
-        printw("newSizeY: %d newSizeX: %d", newSizeY, newSizeX);
-        getch();
-        */
         if(prevCols != cols || prevRows != rows){
             prevCols = cols;
             prevRows = rows;
 
-            //prepare the image
-            CImageOperator currentImageOperator((*imageOperator_), newSizeX, newSizeY);
-        
-            /*
-            printw("scaleX: %f scaleY: %f, scale factor %f \n", scaleX, scaleY, scaleFactor);
-            printw("cols: %d rows: %d \n", cols, rows);
-            printw("newSizeY: %d newSizeX: %d \n", newSizeY, newSizeX);
-            */
-            SProcessingInfo processingInfo;
-            if(parsedInput_.grayscale_ == SParsedInput::EGrayscale::BROAD){
-                processingInfo.grayscale_ = SProcessingInfo::EGrayscale::BROAD;
+            int width = imageOperator_->getOriginalWidth();
+            int height = imageOperator_->getOriginalHeight();
+
+            float scaleX = ((float) cols / 2.0) / (float) width;
+            float scaleY = (float) rows / (float) height;
+
+            float scaleFactor = 0.0;
+            if(scaleX > scaleY){
+                //scale along x
+                scaleFactor = scaleY;
             } else {
-                processingInfo.grayscale_ = SProcessingInfo::EGrayscale::SIMPLE;
+                //scale along y
+                scaleFactor = scaleX;
             }
-            processingInfo.histogramEqualisation_ = parsedInput_.histogramEqualisation_;
+
+            int newSizeX = scaleFactor * width * 2;
+            int newSizeY = scaleFactor * height;
+
+            //prepare the image
+            imageOperator_->onResize(processingInfo, newSizeX, newSizeY);        
 
             //draw the image
             //first clear
             clear();
-            //equalise
-            if(processingInfo.histogramEqualisation_){
-                currentImageOperator.equaliseHistogram();
-            }
             //then draw
-            auto retCharImage = currentImageOperator.drawWindow(processingInfo);
+            auto retCharImage = imageOperator_->drawWindow(processingInfo);
             
             consoleOperator.drawImage(retCharImage);
         }

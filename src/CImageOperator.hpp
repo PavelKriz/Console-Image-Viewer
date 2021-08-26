@@ -24,20 +24,17 @@ struct SImage{
 class CImageOperator{
     SImage originalImage_;
     SImage workImage_;
-    bool equalised_ = false;
-
     inline static int fromNormCoord(float normCoord, int size) { return round(normCoord * (float) size) + 0.001; }
     inline static float toNormCoord(int coord, int size) { return (float) coord / (float) size; }
+    //equalise working image histogram
+    void equaliseHistogram();
 public:
     CImageOperator(const string& filepath);
     
-    void init(uint_fast32_t newScaleToWidth, uint_fast32_t newScaleToHeight);
-    void onResize(uint_fast32_t newScaleToWidth, uint_fast32_t newScaleToHeight);
+    void init(const SProcessingInfo & processingInfo, uint_fast32_t newScaleToWidth, uint_fast32_t newScaleToHeight);
+    void onResize(const SProcessingInfo &  processingInfo, uint_fast32_t newScaleToWidth, uint_fast32_t newScaleToHeight);
     ~CImageOperator();
     
-    //equalise image if it wasn't equalised before
-    void equaliseHistogram();
-    void scale(int scaleToWidth, int scaleToHeight);
     vector<vector<char>> drawWindow(const SProcessingInfo& processingInfo) const;
     vector<vector<char>> getAsciiImage(const SProcessingInfo& processingInfo, int width, int height);
     

@@ -2,6 +2,7 @@
 #include <string>
 #include <cstring>
 #include <vector>
+#include <iostream>
 
 #include "CInputParser.hpp"
 #include "SParsedInput.hpp"
@@ -28,6 +29,7 @@ SParsedInput CInputParser::parseInput(int argc, const char *argv[]){
     //default values
     parsedInput.grayscale_ = SParsedInput::EGrayscale::SIMPLE;
     parsedInput.histogramEqualisation_ = true;
+    parsedInput.fileOutput_.is_ = false;
     
     vector<bool> used(argc, false);
     used[0] = true;
@@ -43,7 +45,6 @@ SParsedInput CInputParser::parseInput(int argc, const char *argv[]){
    	        if(i >= argc){
    	            throw invalid_argument("Invalid arguments!\n" + quickHelp_);
    	        }
-   	        used[i] = true;
    	        
    	        if(strcmp(argv[i], "broad") == 0){
    	            parsedInput.grayscale_ = SParsedInput::EGrayscale::BROAD;
@@ -52,6 +53,7 @@ SParsedInput CInputParser::parseInput(int argc, const char *argv[]){
    	        } else {
    	            throw invalid_argument("Invalid arguments!" + quickHelp_);
    	        }
+   	        used[i] = true;
     	}
     	if(strcmp(argv[i], "-h") == 0){
     	    used[i] = true;
@@ -61,6 +63,25 @@ SParsedInput CInputParser::parseInput(int argc, const char *argv[]){
             used[i] = true;
             parsedInput.histogramEqualisation_ = false;
         }
+        
+        if(strcmp(argv[i], "-f") == 0){
+            parsedInput.fileOutput_.is_ = true;
+            used[i] = true;
+            ++i;
+
+            if(i + 1 >= argc){
+   	            throw invalid_argument("Invalid arguments!\n" + quickHelp_ + to_string(i));
+   	        }
+            
+
+            parsedInput.fileOutput_.width_ = atoi(argv[i]);
+            used[i] = true;
+            ++i;
+            parsedInput.fileOutput_.relativeFilepath_ = string(argv[i]);
+            used[i] = true;
+            cout <<  "A" << endl;
+        }
+        
     }
     
     for(int i = 0; i < argc; ++i){

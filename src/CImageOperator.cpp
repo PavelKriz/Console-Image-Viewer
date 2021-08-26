@@ -18,30 +18,41 @@ CImageOperator::CImageOperator(const string& filepath){
     }
 }
 
-void CImageOperator::init(uint_fast32_t width, uint_fast32_t height){
-    onResize(width, height);
+void CImageOperator::init(const SProcessingInfo & processingInfo, uint_fast32_t width, uint_fast32_t height){
+    onResize(processingInfo, width, height);
 }
 
-void CImageOperator::onResize(uint_fast32_t newWidth, uint_fast32_t newHeight) 
+void CImageOperator::onResize(const SProcessingInfo & processingInfo, uint_fast32_t newWidth, uint_fast32_t newHeight) 
 {
+    if(workImage_.imageData_ != nullptr){
+        delete workImage_.imageData_;
+    }
+    //the allocation is needed the resize itself is not allocating memory
     workImage_.imageData_ = new uint8_t [newWidth * newHeight * originalImage_.bpp_];
     stbir_resize_uint8(originalImage_.imageData_, originalImage_.width_, originalImage_.height_, 0,
                        workImage_.imageData_, newWidth, newHeight, 0, originalImage_.bpp_);
-    workImage_.height_ = newScaleToWidth;
-    
+    workImage_.height_ = newHeight;
+    workImage_.width_ = newWidth;
+    workImage_.bpp_ = originalImage_.bpp_;
+    //equalise working image histogram
+    if(processingInfo.histogramEqualisation_){
+        equaliseHistogram();
+    }
 }
 
 CImageOperator::~CImageOperator(){
-    delete imageData_;
+    if(workImage_.imageData_ != nullptr){
+        delete workImage_.imageData_;
+    }
+    if(originalImage_.imageData_ != nullptr){
+        delete originalImage_.imageData_;
+    }
 }
 
 
 void CImageOperator::equaliseHistogram(){
-    if(equalised_){
-        return;
-    }
-    if(bpp_ != 1){
-        throw("BPP has to be 1");
+    if(workImage_.bpp_ != 1){
+        throw invalid_argument("BPP has to be 1");
     }
     //value, quantity
     map<uint8_t, int> histogram;
@@ -49,11 +60,11 @@ void CImageOperator::equaliseHistogram(){
         histogram.insert(make_pair(i, 0));
     }
 
-    for(int i = 0; i < width_ * height_ * bpp_; ++i){
-        ++histogram.at(imageData_[i]);
+    for(int i = 0; i < workImage_.width_ * workImage_.height_ * workImage_.bpp_; ++i){
+        ++histogram.at(workImage_.imageData_[i]);
     }
 
-    int total = width_ * height_ * bpp_;
+    int total = workImage_.width_ * workImage_.height_ * workImage_.bpp_;
     vector<double> CDF(256, 0.0);
     double sum = 0;
     int minIndex = 0;
@@ -69,24 +80,13 @@ void CImageOperator::equaliseHistogram(){
         CDF[i] = sum;
     }
 
-    uint8_t * equlisedImageData = new uint8_t[width_ * height_ * bpp_];
-    for(int i = 0; i < width_ * height_ * bpp_; ++i){
-        equlisedImageData[i] = ((CDF[imageData_[i]] - CDF[minIndex])/ ( (double) 1.0 - CDF[minIndex])) * 255.0 + 0.00001;
+    uint8_t * equlisedImageData = new uint8_t[workImage_.width_ * workImage_.height_ * workImage_.bpp_];
+    for(int i = 0; i < workImage_.width_ * workImage_.height_ * workImage_.bpp_; ++i){
+        equlisedImageData[i] = ((CDF[workImage_.imageData_[i]] - CDF[minIndex])/ ( (double) 1.0 - CDF[minIndex])) * 255.0 + 0.00001;
     }
 
-    delete [] imageData_;
-    imageData_ = equlisedImageData;
-    equalised_ = true;
-}
-
-void CImageOperator::scale(int scaleToWidth, int scaleToHeight){
-    uint8_t * newImageData = new uint8_t [scaleToWidth * scaleToHeight   * bpp_];
-    stbir_resize_uint8(imageData_, width_, height_, 0,
-                       newImageData, scaleToWidth, scaleToHeight, 0, bpp_);
-    delete [] imageData_;
-    imageData_ = newImageData;
-    width_ = scaleToWidth;
-    height_ = scaleToHeight;
+    delete [] workImage_.imageData_;
+    workImage_.imageData_ = equlisedImageData;
 }
 
 vector<vector<char>> CImageOperator::drawWindow(const SProcessingInfo& processingInfo) const {
@@ -119,13 +119,13 @@ vector<vector<char>> CImageOperator::drawWindow(const SProcessingInfo& processin
     */
     
     vector<vector<char>> retVect;
-    for(int i = 0; i < height_; ++i){
-        retVect.push_back(vector<char>(width_, ' '));
+    for(int i = 0; i < workImage_.height_; ++i){
+        retVect.push_back(vector<char>(workImage_.width_, ' '));
     }
 
-    for(int i = 0; i < height_; ++i){
-        for(int j = 0; j < width_; ++j){
-            float normVal = (float) imageData_[(i * width_ + j) * bpp_ + 0] / 255.0;
+    for(int i = 0; i < workImage_.height_; ++i){
+        for(int j = 0; j < workImage_.width_; ++j){
+            float normVal = (float) workImage_.imageData_[(i * workImage_.width_ + j) * workImage_.bpp_ + 0] / 255.0;
             int paletteIndex = (int) (round(normVal * (float) (paletteMaxIndex)) + 0.01);
             retVect[i][j] = palette[paletteIndex];
         }
@@ -134,6 +134,7 @@ vector<vector<char>> CImageOperator::drawWindow(const SProcessingInfo& processin
     return retVect;
 }
 
+/*
 vector<vector<char>> CImageOperator::getAsciiImage(const SProcessingInfo& processingInfo, int width, int height){
     uint8_t * scaledImageData = new uint8_t [width * height * bpp_];
     stbir_resize_uint8(imageData_, width_, height_, 0,
@@ -160,14 +161,6 @@ vector<vector<char>> CImageOperator::getAsciiImage(const SProcessingInfo& proces
         paletteMaxIndex = simplePaletteMaxIndex;
     }
     
-    /*
-    for(int i = 0; i <= paletteMaxIndex; ++i){
-        printw("%d %c |", i, palette[i]);
-    }
-    refresh();
-    getch();
-    */
-    
     vector<vector<char>> retVect;
     for(int i = 0; i < height; ++i){
         retVect.push_back(vector<char>(width, ' '));
@@ -183,6 +176,6 @@ vector<vector<char>> CImageOperator::getAsciiImage(const SProcessingInfo& proces
 
     return retVect;
 }
-
+*/
 
 

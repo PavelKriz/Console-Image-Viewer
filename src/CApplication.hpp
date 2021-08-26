@@ -11,6 +11,7 @@
 #include "CInputParser.hpp"
 #include "SParsedInput.hpp"
 #include "CImageOperator.hpp"
+#include "CFileSaver.hpp"
 
 class CApplication{
     CConsoleOperator * consoleOperator_ = nullptr;

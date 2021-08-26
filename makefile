@@ -1,7 +1,7 @@
 # simple makefile for the project
 
 NAME= CIViewer
-OBJFILES= src/consoleImg.o src/CImageOperator.o src/CApplication.o src/CInputParser.o src/CLoopTimeManager.o src/CInputHandler.o src/CConsoleOperator.o
+OBJFILES= src/consoleImg.o src/CImageOperator.o src/CApplication.o src/CInputParser.o src/CLoopTimeManager.o src/CInputHandler.o src/CConsoleOperator.o src/CFileSaver.o
 
 CC=g++
 LIBS= -lm -lncurses
