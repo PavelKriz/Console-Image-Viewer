@@ -6,45 +6,29 @@
 #define STB_IMAGE_RESIZE_IMPLEMENTATION
 #include "stb_image_resize.h"
 
-void CImageOperator::resizeToConsole(){
-    int newWidth = width_ * 2;
-    uint8_t * newImageData = new uint8_t [newWidth * height_ * bpp_];
-    for(int i = 0; i < height_; ++i){
-        for(int j = 0; j < width_; ++j){
-            for(int k = 0; k < bpp_; ++k){
-                newImageData[(i * newWidth + j * 2) * bpp_ + k] = imageData_[(i * width_ + j) * bpp_ + k];
-                newImageData[(i * newWidth + j * 2 + 1) * bpp_ + k] = imageData_[(i * width_ + j) * bpp_ + k];  
-            }
-        }
-    }
-    delete imageData_; 
-    imageData_ = newImageData;      
-    width_ = newWidth;
-}
-
 CImageOperator::CImageOperator(const string& filepath){
-    imageData_ = stbi_load(filepath.c_str(), &width_, &height_, &bpp_, 1);
+    //load originalimage
+    originalImage_.imageData_ = stbi_load(filepath.c_str(), &originalImage_.width_, &originalImage_.height_, &originalImage_.bpp_, 1);
     //the bpp is always the info about bpp of the original image but the stb will force and make it 3 or any number, unless it is set to 0 (last parameter of the load function)
-    if(bpp_ != 1){
-        bpp_ = 1;
+    if(originalImage_.bpp_ != 1){
+        originalImage_.bpp_ = 1;
     }
-    if(imageData_ == NULL){
+    if(originalImage_.imageData_ == NULL){
         throw invalid_argument("Image wasn't loaded!\nThe filepath of the image might not be correct.\n");
     }
 }
 
-CImageOperator::CImageOperator(const CImageOperator & toCopy, int scaleToWidth, int scaleToHeight) 
-    :
-    imageData_(nullptr),
-    width_(scaleToWidth),
-    height_(scaleToHeight),
-    bpp_(toCopy.bpp_)
-{
-    uint8_t * newImageData = new uint8_t [scaleToWidth * scaleToHeight * bpp_];
-    stbir_resize_uint8(toCopy.imageData_, toCopy.width_, toCopy.height_, 0,
-                       newImageData, scaleToWidth, scaleToHeight, 0, bpp_);
+void CImageOperator::init(uint_fast32_t width, uint_fast32_t height){
+    onResize(width, height);
+}
 
-    imageData_ = newImageData;
+void CImageOperator::onResize(uint_fast32_t newWidth, uint_fast32_t newHeight) 
+{
+    workImage_.imageData_ = new uint8_t [newWidth * newHeight * originalImage_.bpp_];
+    stbir_resize_uint8(originalImage_.imageData_, originalImage_.width_, originalImage_.height_, 0,
+                       workImage_.imageData_, newWidth, newHeight, 0, originalImage_.bpp_);
+    workImage_.height_ = newScaleToWidth;
+    
 }
 
 CImageOperator::~CImageOperator(){
