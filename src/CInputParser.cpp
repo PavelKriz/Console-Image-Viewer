@@ -1,7 +1,5 @@
 #include "CInputParser.hpp"
 
-#include <iostream>
-
 using namespace std;
 
 const string CInputParser::quickHelp_ = "Try help: \"CIViewer -h\" or:\nBasic usage is following: CIViewer [relative path to the image to be displayed]";
@@ -65,7 +63,6 @@ SParsedInput CInputParser::parseInput(int argc, const char *argv[]){
         else if(strcmp(argv[i], "-i") == 0){
             used[i] = true;
             parsedInput.inversed_ = true;
-            cout << "parsed input inversed = true" << endl;
         }
         else if(strcmp(argv[i], "-f") == 0){
             parsedInput.fileOutput_.is_ = true;

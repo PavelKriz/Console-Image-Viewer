@@ -17,6 +17,11 @@ class CApplication{
     CConsoleOperator * consoleOperator_ = nullptr;
     SParsedInput parsedInput_;
     unique_ptr<CImageOperator> imageOperator_;
+    SProcessingInfo processingInfo_;
+
+    void prepareProcessingInfo();
+    int runFileOutput();
+    int runLiveView();
 public:
     //throw exceptions
     CApplication(int argc, const char *argv[]);

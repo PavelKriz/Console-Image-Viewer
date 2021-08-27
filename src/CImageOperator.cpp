@@ -1,5 +1,4 @@
 #include "CImageOperator.hpp"
-#include <iostream>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -15,7 +14,7 @@ CImageOperator::CImageOperator(const string& filepath){
         originalImage_.bpp_ = 1;
     }
     if(originalImage_.imageData_ == NULL){
-        throw invalid_argument("Image wasn't loaded!\nThe filepath of the image might not be correct.\n");
+        throw invalid_argument("Image wasn't loaded! The filepath of the image might not be correct.");
     }
 }
 

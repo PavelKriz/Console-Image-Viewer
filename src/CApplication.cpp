@@ -1,53 +1,30 @@
 #include "CApplication.hpp"
 
-CApplication::CApplication(int argc, const char *argv[]){
-    try{
-        consoleOperator_ = new CConsoleOperator();
-        parsedInput_ = CInputParser::parseInput(argc, argv);
-        imageOperator_ = make_unique<CImageOperator>(parsedInput_.relativeFilepathToImage_);
-    } catch (const invalid_argument& ia){
-        printw(ia.what());
-        printw("\nPress any key to end...\n");
-        refresh();
-        getch();
-        if(consoleOperator_ != nullptr){
-            delete consoleOperator_;
-        }
-        throw 1;
-    }
-}
-
-CApplication::~CApplication(){
-    if(consoleOperator_ != nullptr){
-        delete consoleOperator_;
-    }
-}
-
-int CApplication::run(){
-    SProcessingInfo processingInfo;
+void CApplication::prepareProcessingInfo(){
         if(parsedInput_.grayscale_ == SParsedInput::EGrayscale::BROAD){
-            processingInfo.grayscale_ = SProcessingInfo::EGrayscale::BROAD;
+            processingInfo_.grayscale_ = SProcessingInfo::EGrayscale::BROAD;
         } else {
-            processingInfo.grayscale_ = SProcessingInfo::EGrayscale::SIMPLE;
+            processingInfo_.grayscale_ = SProcessingInfo::EGrayscale::SIMPLE;
         }
-    processingInfo.histogramEqualisation_ = parsedInput_.histogramEqualisation_;
-    processingInfo.isInversed_ = false;
+    processingInfo_.histogramEqualisation_ = parsedInput_.histogramEqualisation_;
+    processingInfo_.isInversed_ = false;
     if(parsedInput_.fileOutput_.is_){
         if(parsedInput_.inversed_){
-            processingInfo.isInversed_ = false;
+            processingInfo_.isInversed_ = false;
         } else {
-            processingInfo.isInversed_ = true;
+            processingInfo_.isInversed_ = true;
         }
     } else {
-        processingInfo.isInversed_ = parsedInput_.inversed_;
+        processingInfo_.isInversed_ = parsedInput_.inversed_;
     }
 
-    //there is only file output
-    if(parsedInput_.fileOutput_.is_){
-        CFileSaver fileSaver(parsedInput_.fileOutput_.relativeFilepath_);
+}
+
+int CApplication::runFileOutput(){
+    CFileSaver fileSaver(parsedInput_.fileOutput_.relativeFilepath_);
         float ratio = (float) imageOperator_->getOriginalHeight() / (float) imageOperator_->getOriginalWidth();
-        imageOperator_->onResize( processingInfo, parsedInput_.fileOutput_.width_, (int) parsedInput_.fileOutput_.width_ * ratio * 0.5);
-        auto retVect = imageOperator_->drawWindow(processingInfo);
+        imageOperator_->onResize( processingInfo_, parsedInput_.fileOutput_.width_, (int) parsedInput_.fileOutput_.width_ * ratio * 0.5);
+        auto retVect = imageOperator_->drawWindow(processingInfo_);
         try{
             fileSaver.safeFile(retVect);
         } catch (const ofstream::failure& f){
@@ -55,8 +32,9 @@ int CApplication::run(){
             return 1;
         }
         return 0;
-    }
+}
 
+int CApplication::runLiveView(){
     int prevCols = 0;
     int prevRows = 0;
     CLoopTimeManager loopTimeManager;
@@ -93,13 +71,13 @@ int CApplication::run(){
             int newSizeY = scaleFactor * height;
 
             //prepare the image
-            imageOperator_->onResize(processingInfo, newSizeX, newSizeY);        
+            imageOperator_->onResize(processingInfo_, newSizeX, newSizeY);        
 
             //draw the image
             //first clear
             clear();
             //then draw
-            auto retCharImage = imageOperator_->drawWindow(processingInfo);
+            auto retCharImage = imageOperator_->drawWindow(processingInfo_);
             
             consoleOperator.drawImage(retCharImage);
         }
@@ -113,6 +91,40 @@ int CApplication::run(){
         loopTimeManager.sleep();
     }
     
-    return 0;   
+    return 0; 
 }
 
+
+CApplication::CApplication(int argc, const char *argv[]){
+    try{
+        consoleOperator_ = new CConsoleOperator();
+        parsedInput_ = CInputParser::parseInput(argc, argv);
+        imageOperator_ = make_unique<CImageOperator>(parsedInput_.relativeFilepathToImage_);
+        prepareProcessingInfo();
+    } catch (const invalid_argument& ia){
+        printw(ia.what());
+        printw("\nPress any key to end...\n");
+        refresh();
+        getch();
+        if(consoleOperator_ != nullptr){
+            delete consoleOperator_;
+        }
+        throw 1;
+    }
+}
+
+CApplication::~CApplication(){
+    if(consoleOperator_ != nullptr){
+        delete consoleOperator_;
+    }
+    
+}
+
+int CApplication::run(){
+    if(parsedInput_.fileOutput_.is_){
+        //there is only file output
+        return runFileOutput();
+    } else {
+        return runLiveView();
+    }  
+}

@@ -13,7 +13,6 @@ CConsoleOperator::CConsoleOperator(){
 }
 
 CConsoleOperator::~CConsoleOperator(){
-    //exit curses
     if(cursesInitialised_){
         endwin();
         cursesInitialised_ = false;
