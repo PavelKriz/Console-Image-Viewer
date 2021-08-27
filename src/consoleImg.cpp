@@ -5,7 +5,8 @@ using namespace std;
 int main(int argc, const char *argv[]){
     try{
     	CApplication app(argc, argv);
-    	app.run();
+        int ret = app.run();
+    	return ret;
     } catch (int retCode){
     	return retCode;
     }

@@ -1,4 +1,5 @@
 #include "CImageOperator.hpp"
+#include <iostream>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -110,14 +111,6 @@ vector<vector<char>> CImageOperator::drawWindow(const SProcessingInfo& processin
         paletteMaxIndex = simplePaletteMaxIndex;
     }
     
-    /*
-    for(int i = 0; i <= paletteMaxIndex; ++i){
-        printw("%d %c |", i, palette[i]);
-    }
-    refresh();
-    getch();
-    */
-    
     vector<vector<char>> retVect;
     for(int i = 0; i < workImage_.height_; ++i){
         retVect.push_back(vector<char>(workImage_.width_, ' '));
@@ -126,11 +119,15 @@ vector<vector<char>> CImageOperator::drawWindow(const SProcessingInfo& processin
     for(int i = 0; i < workImage_.height_; ++i){
         for(int j = 0; j < workImage_.width_; ++j){
             float normVal = (float) workImage_.imageData_[(i * workImage_.width_ + j) * workImage_.bpp_ + 0] / 255.0;
-            int paletteIndex = (int) (round(normVal * (float) (paletteMaxIndex)) + 0.01);
+            int paletteIndex;
+            if(processingInfo.isInversed_){
+                paletteIndex = (int) (round( (1.0 - normVal) * (float) (paletteMaxIndex)) + 0.01);
+            } else {                
+                paletteIndex = (int) (round(normVal * (float) (paletteMaxIndex)) + 0.01);
+            }
             retVect[i][j] = palette[paletteIndex];
         }
     }
-
     return retVect;
 }
 

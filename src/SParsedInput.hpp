@@ -20,5 +20,6 @@ struct SParsedInput{
     string relativeFilepathToImage_;
     EGrayscale grayscale_;
     bool histogramEqualisation_;
+    bool inversed_;
     SFileOutput fileOutput_;
 };

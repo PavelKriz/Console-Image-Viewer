@@ -31,7 +31,16 @@ int CApplication::run(){
             processingInfo.grayscale_ = SProcessingInfo::EGrayscale::SIMPLE;
         }
     processingInfo.histogramEqualisation_ = parsedInput_.histogramEqualisation_;
-
+    processingInfo.isInversed_ = false;
+    if(parsedInput_.fileOutput_.is_){
+        if(parsedInput_.inversed_){
+            processingInfo.isInversed_ = false;
+        } else {
+            processingInfo.isInversed_ = true;
+        }
+    } else {
+        processingInfo.isInversed_ = parsedInput_.inversed_;
+    }
 
     //there is only file output
     if(parsedInput_.fileOutput_.is_){
@@ -39,7 +48,12 @@ int CApplication::run(){
         float ratio = (float) imageOperator_->getOriginalHeight() / (float) imageOperator_->getOriginalWidth();
         imageOperator_->onResize( processingInfo, parsedInput_.fileOutput_.width_, (int) parsedInput_.fileOutput_.width_ * ratio * 0.5);
         auto retVect = imageOperator_->drawWindow(processingInfo);
-        fileSaver.safeFile(retVect);
+        try{
+            fileSaver.safeFile(retVect);
+        } catch (const ofstream::failure& f){
+            printw(f.what());
+            return 1;
+        }
         return 0;
     }
 

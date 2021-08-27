@@ -2,6 +2,14 @@
 
 #include <stdexcept>
 #include <string>
+#include <string>
+#include <cstring>
+#include <vector>
+
+#include "CInputParser.hpp"
+#include "SParsedInput.hpp"
+
+using namespace std;
 
 #include "SParsedInput.hpp"
 

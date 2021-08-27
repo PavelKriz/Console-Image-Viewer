@@ -1,11 +1,6 @@
-#include <stdexcept>
-#include <string>
-#include <cstring>
-#include <vector>
-#include <iostream>
-
 #include "CInputParser.hpp"
-#include "SParsedInput.hpp"
+
+#include <iostream>
 
 using namespace std;
 
@@ -21,7 +16,10 @@ const string CInputParser::help_ = "Usage is following:\n"
                                    "    [simple] or [broad] (default)\n"
                                    "    eg: -s simple\n"
                                    "-dhe    disables histogram equalisation\n"
-                                   "(Program can be quit by pressing q or Q)";
+                                   "-i  inverses the scale (behaves differently with file or console output)\n"
+                                   "(Program can be quit by pressing q or Q)\n"
+                                   "-f  for file output, usage is:\n"
+                                   "    -f [width in symbols] [output file filepath]";
                                    
 SParsedInput CInputParser::parseInput(int argc, const char *argv[]){
     
@@ -30,6 +28,7 @@ SParsedInput CInputParser::parseInput(int argc, const char *argv[]){
     parsedInput.grayscale_ = SParsedInput::EGrayscale::SIMPLE;
     parsedInput.histogramEqualisation_ = true;
     parsedInput.fileOutput_.is_ = false;
+    parsedInput.inversed_ = false;
     
     vector<bool> used(argc, false);
     used[0] = true;
@@ -55,16 +54,20 @@ SParsedInput CInputParser::parseInput(int argc, const char *argv[]){
    	        }
    	        used[i] = true;
     	}
-    	if(strcmp(argv[i], "-h") == 0){
+    	else if(strcmp(argv[i], "-h") == 0){
     	    used[i] = true;
    	        throw invalid_argument(help_);
     	}
-        if(strcmp(argv[i], "-dhe") == 0){
+        else if(strcmp(argv[i], "-dhe") == 0){
             used[i] = true;
             parsedInput.histogramEqualisation_ = false;
         }
-        
-        if(strcmp(argv[i], "-f") == 0){
+        else if(strcmp(argv[i], "-i") == 0){
+            used[i] = true;
+            parsedInput.inversed_ = true;
+            cout << "parsed input inversed = true" << endl;
+        }
+        else if(strcmp(argv[i], "-f") == 0){
             parsedInput.fileOutput_.is_ = true;
             used[i] = true;
             ++i;
@@ -79,7 +82,6 @@ SParsedInput CInputParser::parseInput(int argc, const char *argv[]){
             ++i;
             parsedInput.fileOutput_.relativeFilepath_ = string(argv[i]);
             used[i] = true;
-            cout <<  "A" << endl;
         }
         
     }

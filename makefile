@@ -9,7 +9,7 @@ WARNFLAGS= -pedantic -Wall
 
 #object creating rule
 %.o: %.cpp
-	$(CC) $(WARNFLAGS) -c $< -o $@
+	$(CC) $(WARNFLAGS) -g -c $< -o $@
 
 all: $(NAME)
 	

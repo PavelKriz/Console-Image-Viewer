@@ -7,4 +7,5 @@ struct SProcessingInfo{
     };
     bool histogramEqualisation_;
     EGrayscale grayscale_ = SProcessingInfo::EGrayscale::BROAD;
+    bool isInversed_;
 };
